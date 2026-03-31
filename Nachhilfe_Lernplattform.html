@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Abschlussprüfung Lernplattform</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c25;
+    --surface2: #1e2330;
+    --border: #2a3045;
+    --accent-de: #e8624a;
+    --accent-en: #4a9ee8;
+    --accent-ma: #6bcf7f;
+    --accent-el: #f0c040;
+    --text: #e8eaf0;
+    --text-muted: #7a8299;
+    --text-dim: #4a5270;
+    --radius: 14px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* === NAV === */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(15,17,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    display: flex; align-items: center; gap: 12px;
+    height: 56px;
+  }
+  .topbar-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800; font-size: 15px;
+    color: var(--text); flex: 1;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .back-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-muted); border-radius: 8px;
+    padding: 6px 12px; font-size: 13px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    display: none; align-items: center; gap: 6px;
+    transition: all 0.2s;
+  }
+  .back-btn:hover { color: var(--text); border-color: var(--text-muted); }
+  .back-btn.visible { display: flex; }
+
+  /* === MAIN LAYOUT === */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* === HOME === */
+  .home-hero {
+    padding: 40px 20px 24px;
+    text-align: center;
+  }
+  .home-hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(24px, 6vw, 36px);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .home-hero p {
+    color: var(--text-muted); font-size: 14px; line-height: 1.6;
+  }
+  .countdown-strip {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 10px; padding: 0 16px 24px;
+    max-width: 600px; margin: 0 auto;
+  }
+  .countdown-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; transition: all 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .countdown-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+  }
+  .countdown-card.de::before { background: var(--accent-de); }
+  .countdown-card.en::before { background: var(--accent-en); }
+  .countdown-card.ma::before { background: var(--accent-ma); }
+  .countdown-card.el::before { background: var(--accent-el); }
+  .countdown-card:hover { background: var(--surface2); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .cc-emoji { font-size: 22px; }
+  .cc-info { flex: 1; }
+  .cc-subject { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; }
+  .cc-date { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .cc-days {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 800;
+  }
+  .cc-days span { font-size: 10px; color: var(--text-muted); font-weight: 400; display: block; text-align: right; }
+
+  .subjects-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px; padding: 0 16px 32px;
+    max-width: 600px; margin: 0 auto;
+  }
+  .subject-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 16px;
+    cursor: pointer; transition: all 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .subject-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .subject-card .sc-accent {
+    position: absolute; top: 0; right: 0;
+    width: 80px; height: 80px; border-radius: 50%;
+    opacity: 0.07; transform: translate(20px, -20px);
+  }
+  .subject-card.de .sc-accent { background: var(--accent-de); }
+  .subject-card.en .sc-accent { background: var(--accent-en); }
+  .subject-card.ma .sc-accent { background: var(--accent-ma); }
+  .subject-card.el .sc-accent { background: var(--accent-el); }
+  .sc-icon { font-size: 28px; margin-bottom: 10px; }
+  .sc-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 15px; margin-bottom: 4px;
+  }
+  .sc-goal { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+  .sc-progress-bar {
+    height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+  }
+  .sc-progress-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+  .subject-card.de .sc-progress-fill { background: var(--accent-de); }
+  .subject-card.en .sc-progress-fill { background: var(--accent-en); }
+  .subject-card.ma .sc-progress-fill { background: var(--accent-ma); }
+  .subject-card.el .sc-progress-fill { background: var(--accent-el); }
+
+  /* === SUBJECT OVERVIEW === */
+  .subject-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+  }
+  .subject-header-top {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 12px;
+  }
+  .sh-icon { font-size: 32px; }
+  .sh-info h2 {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px;
+  }
+  .sh-info p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .sh-goal-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    border: 1px solid;
+  }
+
+  .topics-list { padding: 16px; max-width: 600px; margin: 0 auto; }
+  .topic-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .topic-block:hover { border-color: var(--text-dim); }
+  .topic-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px;
+  }
+  .topic-prio {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .prio-high { background: #e8624a; }
+  .prio-mid { background: #f0c040; }
+  .prio-low { background: #6bcf7f; }
+  .topic-name {
+    flex: 1;
+    font-family: 'Syne', sans-serif; font-weight: 600; font-size: 14px;
+  }
+  .topic-badge {
+    font-size: 11px; padding: 3px 8px; border-radius: 6px;
+    background: var(--surface2); color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .topic-chevron { color: var(--text-dim); font-size: 16px; }
+  .topic-desc {
+    padding: 0 16px 14px 36px;
+    font-size: 13px; color: var(--text-muted); line-height: 1.5;
+  }
+
+  /* === TOPIC DETAIL === */
+  .topic-detail { padding: 0; }
+  .topic-detail-header {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tdh-label {
+    font-size: 11px; color: var(--text-dim); letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .tdh-title {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px;
+    line-height: 1.2;
+  }
+
+  .tab-bar {
+    display: flex; gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    padding: 12px 20px;
+    font-size: 13px; font-weight: 500;
+    color: var(--text-muted);
+    background: none; border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer; white-space: nowrap;
+    transition: all 0.2s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tab-btn.active { color: var(--text); border-bottom-color: currentColor; }
+  .tab-btn:hover { color: var(--text); }
+
+  .tab-content { display: none; padding: 20px 16px; max-width: 700px; margin: 0 auto; }
+  .tab-content.active { display: block; }
+
+  /* === CONTENT BLOCKS === */
+  .content-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .content-section h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 15px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .content-section p, .content-section li {
+    font-size: 14px; line-height: 1.7; color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .content-section ul { padding-left: 20px; }
+  .content-section li { margin-bottom: 4px; }
+  .content-section strong { color: var(--text); font-weight: 600; }
+
+  .formula-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-el);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px 0;
+    font-size: 15px;
+    font-family: 'Courier New', monospace;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .formula-box.de { border-left-color: var(--accent-de); }
+  .formula-box.en { border-left-color: var(--accent-en); }
+  .formula-box.ma { border-left-color: var(--accent-ma); }
+  .formula-box.el { border-left-color: var(--accent-el); }
+
+  .tip-box {
+    background: rgba(107, 207, 127, 0.06);
+    border: 1px solid rgba(107, 207, 127, 0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px 0;
+    font-size: 13px; color: #6bcf7f;
+  }
+  .warn-box {
+    background: rgba(240, 192, 64, 0.06);
+    border: 1px solid rgba(240, 192, 64, 0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 10px 0;
+    font-size: 13px; color: #f0c040;
+  }
+
+  /* === EXERCISES === */
+  .exercise-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .exercise-number {
+    font-size: 11px; color: var(--text-dim); letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .exercise-question {
+    font-size: 14px; line-height: 1.6; margin-bottom: 14px;
+    color: var(--text);
+  }
+  .answer-area {
+    width: 100%; min-height: 80px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    color: var(--text); font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    resize: vertical;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+  }
+  .answer-area:focus { outline: none; border-color: var(--text-dim); }
+  .answer-actions {
+    display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;
+  }
+  .btn {
+    padding: 9px 18px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--text); color: var(--bg);
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-secondary {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .btn-secondary:hover { color: var(--text); }
+  .btn-small {
+    padding: 6px 12px; font-size: 12px; border-radius: 6px;
+  }
+
+  .solution-box {
+    display: none;
+    margin-top: 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid #6bcf7f;
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .solution-box.show { display: block; }
+  .solution-label {
+    font-size: 11px; color: #6bcf7f; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px;
+  }
+  .solution-text {
+    font-size: 13px; line-height: 1.7; color: var(--text-muted);
+  }
+  .solution-text strong { color: var(--text); }
+
+  /* === PROBEPRÜFUNG === */
+  .probe-intro {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .probe-intro h3 {
+    font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 8px;
+  }
+  .probe-intro p { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6; }
+  .probe-meta {
+    display: flex; justify-content: center; gap: 20px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .probe-meta-item {
+    text-align: center;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .probe-meta-item strong {
+    display: block; font-size: 18px;
+    font-family: 'Syne', sans-serif; font-weight: 800; color: var(--text);
+    margin-bottom: 2px;
+  }
+  .timer-display {
+    font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800;
+    color: var(--accent-el);
+    margin: 8px 0;
+  }
+
+  /* === PROGRESS === */
+  .progress-overview {
+    padding: 16px;
+    max-width: 600px; margin: 0 auto;
+  }
+  .prog-section { margin-bottom: 24px; }
+  .prog-section h3 {
+    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+    margin-bottom: 12px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.06em; font-size: 12px;
+  }
+  .prog-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .prog-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .prog-label { flex: 1; font-size: 13px; }
+  .prog-value { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Animations */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .screen.active { animation: fadeIn 0.25s ease; }
+
+  .section-divider {
+    text-align: center;
+    padding: 8px 0 16px;
+    font-size: 12px; color: var(--text-dim);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <button class="back-btn" id="backBtn" onclick="goBack()">← Zurück</button>
+  <div class="topbar-title" id="topbarTitle">📚 Abschlussprüfung 2025</div>
+</div>
+
+<!-- ========== SCREEN: HOME ========== -->
+<div class="screen active" id="screen-home">
+  <div class="home-hero">
+    <h1>Deine Lernplattform<br>für die Abschlussprüfungen</h1>
+    <p>Berufskolleg · Christian-Schmidt-Schule · 2025</p>
+  </div>
+
+  <!-- Countdown -->
+  <div class="countdown-strip">
+    <div class="countdown-card de" onclick="openSubject('de')">
+      <div class="cc-emoji">🇩🇪</div>
+      <div class="cc-info">
+        <div class="cc-subject">Deutsch</div>
+        <div class="cc-date">12. Mai</div>
+      </div>
+      <div class="cc-days" id="days-de">–<span>Tage</span></div>
+    </div>
+    <div class="countdown-card en" onclick="openSubject('en')">
+      <div class="cc-emoji">🇬🇧</div>
+      <div class="cc-info">
+        <div class="cc-subject">Englisch</div>
+        <div class="cc-date">19. Mai</div>
+      </div>
+      <div class="cc-days" id="days-en">–<span>Tage</span></div>
+    </div>
+    <div class="countdown-card el" onclick="openSubject('el')">
+      <div class="cc-emoji">⚡</div>
+      <div class="cc-info">
+        <div class="cc-subject">Elektrotechnik</div>
+        <div class="cc-date">18. Mai (Th.)</div>
+      </div>
+      <div class="cc-days" id="days-el">–<span>Tage</span></div>
+    </div>
+    <div class="countdown-card ma" onclick="openSubject('ma')">
+      <div class="cc-emoji">📐</div>
+      <div class="cc-info">
+        <div class="cc-subject">Mathe</div>
+        <div class="cc-date">21. Mai</div>
+      </div>
+      <div class="cc-days" id="days-ma">–<span>Tage</span></div>
+    </div>
+  </div>
+
+  <div class="section-divider">Fächer auswählen</div>
+
+  <div class="subjects-grid">
+    <div class="subject-card de" onclick="openSubject('de')">
+      <div class="sc-accent"></div>
+      <div class="sc-icon">🇩🇪</div>
+      <div class="sc-name">Deutsch</div>
+      <div class="sc-goal">Aktuell: 3 → Ziel: 2</div>
+      <div class="sc-progress-bar"><div class="sc-progress-fill" style="width:60%"></div></div>
+    </div>
+    <div class="subject-card en" onclick="openSubject('en')">
+      <div class="sc-accent"></div>
+      <div class="sc-icon">🇬🇧</div>
+      <div class="sc-name">Englisch</div>
+      <div class="sc-goal">Aktuell: 4 → Ziel: 3</div>
+      <div class="sc-progress-bar"><div class="sc-progress-fill" style="width:35%"></div></div>
+    </div>
+    <div class="subject-card ma" onclick="openSubject('ma')">
+      <div class="sc-accent"></div>
+      <div class="sc-icon">📐</div>
+      <div class="sc-name">Mathematik</div>
+      <div class="sc-goal">Aktuell: 4 → Ziel: 3</div>
+      <div class="sc-progress-bar"><div class="sc-progress-fill" style="width:35%"></div></div>
+    </div>
+    <div class="subject-card el" onclick="openSubject('el')">
+      <div class="sc-accent"></div>
+      <div class="sc-icon">⚡</div>
+      <div class="sc-name">Elektrotechnik</div>
+      <div class="sc-goal">Aktuell: 4,4 → Ziel: 4</div>
+      <div class="sc-progress-bar"><div class="sc-progress-fill" style="width:20%"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SCREEN: SUBJECT ========== -->
+<div class="screen" id="screen-subject">
+  <div class="subject-header" id="subject-header-content"></div>
+  <div class="topics-list" id="topics-list-content"></div>
+</div>
+
+<!-- ========== SCREEN: TOPIC DETAIL ========== -->
+<div class="screen" id="screen-topic">
+  <div class="topic-detail-header" id="topic-detail-header"></div>
+  <div class="tab-bar" id="topic-tabs"></div>
+  <div id="topic-tab-content"></div>
+</div>
+
+<script>
+// ===== DATA =====
+const SUBJECTS = {
+  de: {
+    name: 'Deutsch', emoji: '🇩🇪', cls: 'de',
+    date: '12. Mai 2025', dateISO: '2025-05-12',
+    aktuell: '3,0', ziel: '2',
+    goalText: 'Von 3 auf 2 — fokussiere auf Stellungnahme!',
+    topics: [
+      {
+        id: 'de-1', prio: 'high', name: 'Materialgestützte Stellungnahme',
+        badge: '⭐ Fokusthema',
+        desc: 'Aufbau, Argumentation und Einleitung — hier werden die meisten Punkte entschieden.',
+        einfuehrung: [
+          { type: 'intro', text: 'Die materialgestützte Stellungnahme ist <strong>deine wichtigste Aufgabe</strong> in der Prüfung. Du bekommst Texte, Diagramme oder Bilder und musst dazu eine strukturierte, meinungsbasierte Antwort schreiben.' },
+          { type: 'head', text: 'Der 5-Teile-Aufbau (auswendig lernen!)' },
+          { type: 'list', items: [
+            '<strong>1. Einleitung</strong>: Thema vorstellen, erste eigene Position benennen',
+            '<strong>2. These</strong>: Deine klare Hauptaussage/Meinung in einem Satz',
+            '<strong>3. Argumente</strong>: 2–3 Argumente mit Belegen aus dem Material',
+            '<strong>4. Gegenargument + Entkräftung</strong>: Zeigt, dass du differenziert denkst',
+            '<strong>5. Schluss</strong>: Zusammenfassung + abschließende Haltung'
+          ]},
+          { type: 'formula', cls: 'de', text: 'Argumentationskette: BEHAUPTUNG → BEGRÜNDUNG → BEISPIEL' },
+          { type: 'head', text: 'Nützliche Phrasen' },
+          { type: 'list', items: [
+            'Einleitung: „Der vorliegende Text von [Autor] aus dem Jahr [Jahr] thematisiert..."',
+            'These: „Meiner Ansicht nach..." / „Ich bin der Meinung, dass..."',
+            'Übergänge: „Einerseits... Andererseits..." / „Ein weiteres Argument ist..."',
+            'Gegenpol: „Zwar könnte man einwenden, dass... Jedoch..."',
+            'Schluss: „Zusammenfassend lässt sich sagen, dass..."'
+          ]},
+          { type: 'tip', text: '💡 Schreibe immer in der Gegenwart (Präsens) und verwende nie die Ich-Form zu häufig!' },
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Beschreibe den 5-Teile-Aufbau der materialgestützten Stellungnahme aus dem Gedächtnis. Nenne zu jedem Teil eine kurze Erklärung.',
+            solution: '<strong>1. Einleitung:</strong> Thema vorstellen, eigene Position ankündigen<br><strong>2. These:</strong> Klare Hauptmeinung in 1–2 Sätzen formulieren<br><strong>3. Argumente (2–3):</strong> Jeweils Behauptung → Begründung → Beispiel aus dem Material<br><strong>4. Gegenargument + Entkräftung:</strong> „Zwar... jedoch..." — zeigt Differenziertheit<br><strong>5. Schluss:</strong> Kurze Zusammenfassung + abschließende Haltung'
+          },
+          {
+            nr: 2,
+            q: 'Formuliere eine vollständige Argumentationskette (Behauptung → Begründung → Beispiel) zum Thema: <em>„Soziale Medien schaden dem Schlaf von Jugendlichen."</em>',
+            solution: '<strong>Behauptung:</strong> Soziale Medien schaden dem Schlaf von Jugendlichen.<br><strong>Begründung:</strong> Das blaue Licht von Bildschirmen hemmt die Ausschüttung des Schlafhormons Melatonin, was das Einschlafen erschwert.<br><strong>Beispiel:</strong> Wie im Material beschrieben, schlafen Jugendliche, die ihr Smartphone vor dem Schlafen nutzen, im Schnitt eine Stunde weniger als Gleichaltrige ohne Smartphone am Abend.'
+          },
+          {
+            nr: 3,
+            q: 'Schreibe einen vollständigen Einleitungssatz für eine Stellungnahme. Material: Ein Zeitungsartikel von Lisa Müller aus dem Jahr 2024 zum Thema "Pflicht zum Recycling".',
+            solution: 'Der vorliegende Zeitungsartikel von Lisa Müller aus dem Jahr 2024 thematisiert die Frage, ob Recycling in Deutschland zur Pflicht gemacht werden sollte, und beleuchtet dabei sowohl ökologische als auch wirtschaftliche Aspekte.'
+          }
+        ],
+        probe: {
+          title: 'Probeprüfung: Materialgestützte Stellungnahme',
+          dauer: '90 Min',
+          punkte: 50,
+          aufgaben: [
+            {
+              text: 'Lies den folgenden Text sorgfältig durch und schreibe anschließend eine materialgestützte Stellungnahme (ca. 300–400 Wörter).\n\n--- MATERIAL ---\n„Die Vier-Tage-Woche – Zukunft der Arbeit?" (2024)\n\nImmer mehr Unternehmen in Deutschland experimentieren mit der Vier-Tage-Woche. In einem Pilotprojekt mit 45 Unternehmen berichteten 92% der Mitarbeiter von weniger Stress und höherer Zufriedenheit. Gleichzeitig blieb die Produktivität laut Unternehmensberichten konstant oder stieg sogar leicht an. Kritiker hingegen warnen: In Branchen wie Gastronomie, Pflege oder Handwerk ist eine solche Reduktion kaum möglich, ohne Kunden zu verlieren oder Kollegen zu überlasten. Außerdem müssten Gehaltsstrukturen angepasst werden, was vor allem kleine Betriebe vor Probleme stellt.\n---\n\nFormuliere in deiner Stellungnahme: Einleitung, These, mindestens 2 Argumente, ein Gegenargument mit Entkräftung und einen Schluss.',
+              musterloesung: '**Muster-Stellungnahme:**\n\n**Einleitung:** Der vorliegende Artikel aus dem Jahr 2024 thematisiert das zunehmende Interesse an der Vier-Tage-Woche als Arbeitsmodell der Zukunft.\n\n**These:** Meiner Ansicht nach bietet die Vier-Tage-Woche großes Potenzial, sollte jedoch nicht für alle Branchen verpflichtend eingeführt werden.\n\n**Argument 1 (BBB):** Studien zeigen, dass Mitarbeiter bei weniger Arbeitstagen weniger Stress empfinden. Da Stress ein Hauptfaktor für Burnout und Fehlzeiten ist, profitieren sowohl Arbeitnehmer als auch Arbeitgeber. Im Material wird beschrieben, dass 92 % der Teilnehmer des Pilotprojekts weniger Stress berichteten.\n\n**Argument 2:** Die Produktivität bleibt trotz kürzerer Arbeitszeit konstant oder steigt sogar. Konzentrierteres Arbeiten in vier statt fünf Tagen kann effizienter sein.\n\n**Gegenargument + Entkräftung:** Zwar ist das Modell in Branchen wie Pflege oder Gastronomie kaum umsetzbar. Jedoch bedeutet das nicht, dass es für alle Bereiche scheitert – eine flexible, branchenspezifische Einführung wäre die Lösung.\n\n**Schluss:** Zusammenfassend lässt sich sagen, dass die Vier-Tage-Woche ein vielversprechendes Modell ist, das individuell und nicht als Einheitslösung eingeführt werden sollte.'
+            }
+          ]
+        }
+      },
+      {
+        id: 'de-2', prio: 'high', name: 'Inhaltsangabe & Einleitungssatz',
+        badge: '📝 Grundlage',
+        desc: 'Der Einleitungssatz muss sitzen: Autor, Titel, Textart, Jahr, Thema.',
+        einfuehrung: [
+          { type: 'intro', text: 'Die Inhaltsangabe fasst einen Text <strong>objektiv, sachlich und im Präsens</strong> zusammen. Keine eigene Meinung! Kein wörtliches Abschreiben!' },
+          { type: 'formula', cls: 'de', text: 'Einleitungssatz: [Textart] „[Titel]" von [Autor] aus dem Jahr [Jahr] handelt von/thematisiert [Thema].' },
+          { type: 'head', text: 'Wichtige Regeln' },
+          { type: 'list', items: [
+            '<strong>Präsens</strong> (Gegenwart) verwenden — nicht Vergangenheit',
+            'Eigene Meinung weglassen',
+            'Keine direkten Zitate oder wörtlichen Übernahmen',
+            'Chronologischer Aufbau: Anfang → Mitte → Ende',
+            'Länge: ca. 1/3 des Originaltextes'
+          ]},
+          { type: 'tip', text: '💡 Strukturwörter: „Zunächst...", „Daraufhin...", „Abschließend..."' },
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Formuliere den korrekten Einleitungssatz für folgende Angaben:\n- Textart: Reportage\n- Titel: „Die Stille vor dem Sturm"\n- Autor: Hannah Wolf\n- Jahr: 2023\n- Thema: Folgen des Klimawandels für die Landwirtschaft',
+            solution: 'Die Reportage „Die Stille vor dem Sturm" von Hannah Wolf aus dem Jahr 2023 thematisiert die Auswirkungen des Klimawandels auf die Landwirtschaft.'
+          },
+          {
+            nr: 2,
+            q: 'Erkläre in eigenen Worten: Warum darf in einer Inhaltsangabe KEINE eigene Meinung stehen? Nenne außerdem 2 Signalwörter, die zeigen, dass eine eigene Meinung vorhanden ist.',
+            solution: 'Eine Inhaltsangabe soll den Text objektiv und neutral wiedergeben — sie ist eine sachliche Zusammenfassung, kein Kommentar. Der Leser soll den Inhalt des Originals verstehen, nicht deine Sicht darauf.<br><br><strong>Meinungs-Signalwörter:</strong> „Ich finde...", „Meiner Meinung nach...", „Das ist falsch, weil...", „Leider...", „Zum Glück..."'
+          }
+        ],
+        probe: null
+      },
+      {
+        id: 'de-3', prio: 'mid', name: 'Charakterisierung & Interpretieren',
+        badge: '📖 Literatur',
+        desc: 'Figuren analysieren, Gefühle und Verhalten deuten. Gestaltendes Interpretieren (Tagebuch/Brief).',
+        einfuehrung: [
+          { type: 'intro', text: 'Bei der Charakterisierung analysierst du eine Figur aus einem Text: äußeres Erscheinungsbild, Verhalten, Gedanken, Beziehungen zu anderen Figuren.' },
+          { type: 'formula', cls: 'de', text: 'Aufbau: Wer ist die Figur? → Wie verhält sie sich? → Warum (Motive)? → Bedeutung im Text' },
+          { type: 'head', text: 'Gestaltende Interpretation (Tagebuch/Brief)' },
+          { type: 'list', items: [
+            'Du schreibst <em>aus der Perspektive</em> einer Figur',
+            'Passende Sprache der Figur verwenden (jung/alt, formell/informell)',
+            'Emotionen einbauen — wie fühlt die Figur sich?',
+            'Auf Textinhalt eingehen, nicht erfinden!'
+          ]},
+          { type: 'tip', text: '💡 Zitiere kurz aus dem Text ("wie es im Buch heißt...") um deine Analyse zu belegen.' },
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Schreibe einen kurzen Tagebucheintrag (5–8 Sätze) aus der Sicht eines Schülers, der gerade erfahren hat, dass er die Prüfung bestanden hat. Achte auf Gefühle, Ich-Perspektive und eine authentische Sprache.',
+            solution: '<strong>Beispiel-Muster:</strong><br>Heute, 15. Mai 2025<br><br>Ich kann es immer noch nicht glauben. Als Frau Schmidt meinen Namen aufgerufen hat, wurde mir kurz schwarz vor Augen – und dann hat sie „bestanden" gesagt. Bestanden! Mein Herz hat einen Satz gemacht. Sofort habe ich Mama angerufen, sie hat angefangen zu weinen. Ich auch. All die langen Nächte, all das Lernen – es hat sich gelohnt. Jetzt fühlt sich alles leichter an. Ich bin so erleichtert und gleichzeitig total leer – die gute Art von leer.'
+          }
+        ],
+        probe: null
+      },
+      {
+        id: 'de-4', prio: 'low', name: 'Rechtschreibung & Grammatik',
+        badge: '✍️ Basics',
+        desc: 'Kommasetzung bei „dass", Relativsätzen. Sicheres Nachschlagen im Wörterbuch.',
+        einfuehrung: [
+          { type: 'intro', text: 'Rechtschreibung und Zeichensetzung kosten dich in der Prüfung keine Extrapunkte — aber Fehler ziehen Punkte ab! Die wichtigsten Regeln musst du sicher beherrschen.' },
+          { type: 'head', text: 'Kommaregeln (die wichtigsten)' },
+          { type: 'list', items: [
+            '<strong>„dass" → immer Komma davor:</strong> „Ich glaube, dass er recht hat."',
+            '<strong>Relativsatz → Komma:</strong> „Der Mann, der dort steht, ist mein Lehrer."',
+            '<strong>Aufzählung ohne „und"/„oder" → Komma:</strong> „rot, blau, grün"',
+            '<strong>Kein Komma</strong> bei „und", „oder", „aber" zwischen einfachen Hauptsätzen'
+          ]},
+          { type: 'warn', text: '⚠️ „das" (Artikel/Pronomen) vs. „dass" (Konjunktion): „Das Buch liegt dort." vs. „Ich weiß, dass er kommt."' },
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Setze die fehlenden Kommas ein:\na) Ich denke dass Lernen Spaß machen kann.\nb) Das Buch das ich gestern gelesen habe war spannend.\nc) Sie kaufte Äpfel Birnen Bananen und Orangen.\nd) Er läuft schnell aber er kommt zu spät.',
+            solution: 'a) Ich denke<strong>,</strong> dass Lernen Spaß machen kann.<br>b) Das Buch<strong>,</strong> das ich gestern gelesen habe<strong>,</strong> war spannend.<br>c) Sie kaufte Äpfel<strong>,</strong> Birnen<strong>,</strong> Bananen und Orangen.<br>d) Er läuft schnell, aber er kommt zu spät. (Komma optional bei einfachen HS mit "aber")'
+          }
+        ],
+        probe: null
+      }
+    ]
+  },
+
+  en: {
+    name: 'Englisch', emoji: '🇬🇧', cls: 'en',
+    date: '19. Mai 2025', dateISO: '2025-05-19',
+    aktuell: '4', ziel: '3',
+    goalText: 'Von 4 auf 3 — Reading & Writing sind die Schlüssel!',
+    topics: [
+      {
+        id: 'en-1', prio: 'high', name: 'Reading Comprehension',
+        badge: '📖 Punkte-Garant',
+        desc: 'True/False gezielt im Text suchen. Antworten in vollständigen englischen Sätzen.',
+        einfuehrung: [
+          { type: 'intro', text: 'In the reading section, you get a text and answer questions about it. <strong>Always find proof in the text</strong> before you write your answer.' },
+          { type: 'head', text: 'True/False Strategie' },
+          { type: 'list', items: [
+            'Lies die Aussage ZUERST, dann such im Text',
+            'Markiere den Satz im Text, der die Aussage belegt oder widerlegt',
+            'Schreibe: "True – The text says that..." oder "False – According to the text..."',
+            'Keine eigene Meinung!'
+          ]},
+          { type: 'formula', cls: 'en', text: 'Answer formula: "[True/False]. The text states that [quote/paraphrase from text]."' },
+          { type: 'head', text: 'Useful question words' },
+          { type: 'list', items: [
+            'What = Was? → name/describe',
+            'Why = Warum? → give reason',
+            'How = Wie? → explain method/way',
+            'Who = Wer? → name person/group'
+          ]},
+          { type: 'tip', text: '💡 Always write full sentences! Never just "Yes" or "No".' },
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Read the mini-text and answer the question in a full sentence:\n\n"Many young people in Germany use social media for more than 3 hours per day. A recent study found that this leads to higher levels of anxiety and lower school performance. However, social media also helps teens stay connected with friends."\n\nQuestion: According to the text, what are TWO effects of heavy social media use?',
+            solution: '<strong>Answer:</strong> According to the text, two effects of heavy social media use are higher levels of anxiety and lower school performance.'
+          },
+          {
+            nr: 2,
+            q: 'True or False? Justify with information from the text above.\n\nStatement: "Social media has only negative effects on young people."',
+            solution: '<strong>False.</strong> The text states that social media also helps teenagers stay connected with their friends, which is a positive effect.'
+          }
+        ],
+        probe: null
+      },
+      {
+        id: 'en-2', prio: 'high', name: 'Writing: Opinion & Blog',
+        badge: '✍️ Pflicht-Aufgabe',
+        desc: 'Stellungnahme (ca. 100 Wörter) und Blogeintrag/Story (ca. 160 Wörter) schreiben.',
+        einfuehrung: [
+          { type: 'intro', text: 'In the writing section you will usually write an <strong>opinion text (100 words)</strong> or a <strong>blog post / story (160 words)</strong>. Structure is everything!' },
+          { type: 'head', text: 'Opinion Text Structure (3 Paragraphs)' },
+          { type: 'formula', cls: 'en', text: 'Para 1 (Introduction): State your opinion clearly\nPara 2 (Arguments): Give 2–3 reasons + examples\nPara 3 (Conclusion): Summarize your view' },
+          { type: 'head', text: 'Useful phrases for opinion texts' },
+          { type: 'list', items: [
+            'In my opinion / I think / I believe...',
+            'First of all... / Secondly... / Furthermore...',
+            'On the other hand...',
+            'To sum up / In conclusion...',
+            'I strongly agree/disagree with...'
+          ]},
+          { type: 'head', text: 'Blog Post / Story — Key tips' },
+          { type: 'list', items: [
+            'Start with a catchy headline',
+            'Use "I" and personal language',
+            'Include feelings and reactions',
+            'Use varied vocabulary — avoid repeating the same words'
+          ]},
+          { type: 'warn', text: '⚠️ Word count matters! Count your words. 100 or 160 words is the target — not 60, not 250!' },
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Write an opinion text (approx. 100 words) on the following topic:\n\n"Young people should not be allowed to use smartphones in school."\n\nUse the 3-paragraph structure. Write your answer below.',
+            solution: '<strong>Sample Answer (~100 words):</strong><br><br>In my opinion, smartphones should not be used in school lessons. There are several reasons why I think this.<br><br>First of all, smartphones are a major distraction. Students often check social media instead of paying attention to the teacher. Secondly, using phones during lessons can make it harder to focus and learn new information. Furthermore, it is unfair to students who try to concentrate.<br><br>On the other hand, smartphones can be useful for research. However, teachers can control this better by allowing phones only for specific tasks.<br><br>To sum up, I believe smartphones should be banned during lessons to improve learning.'
+          }
+        ],
+        probe: {
+          title: 'Probeprüfung: Reading & Writing',
+          dauer: '90 Min',
+          punkte: 60,
+          aufgaben: [
+            {
+              text: '**PART 1 – READING (30 min)**\n\nRead the text carefully and answer the questions.\n\n--- TEXT ---\n"The Rise of Electric Cars"\n\nElectric cars are becoming increasingly popular around the world. In Germany, the number of registered electric vehicles doubled between 2021 and 2023. Car manufacturers are investing billions into battery technology to make electric cars cheaper and more efficient. One major advantage is the reduction of CO₂ emissions in cities. However, critics point out that electricity in Germany is still partly produced from fossil fuels. In addition, charging infrastructure remains limited in rural areas, making long-distance travel more difficult for electric car owners.\n---\n\nQuestion 1: According to the text, how did the number of electric cars in Germany change between 2021 and 2023?\n\nQuestion 2: True or False? "Electric cars produce no CO₂ at all." Justify your answer.\n\nQuestion 3: What is ONE disadvantage of electric cars mentioned in the text?\n\n**PART 2 – WRITING (60 min)**\n\nWrite an opinion text (approx. 100 words):\n"Electric cars are the solution to climate change. Do you agree?"\n\nOR write a blog post (approx. 160 words):\n"My first experience with an electric car"',
+              musterloesung: '**PART 1 ANSWERS:**\n\n1. According to the text, the number of registered electric vehicles in Germany doubled between 2021 and 2023.\n\n2. False. The text states that electricity in Germany is still partly produced from fossil fuels, which means electric cars indirectly produce CO₂.\n\n3. One disadvantage is that charging infrastructure remains limited in rural areas, which makes long-distance travel more difficult.\n\n**PART 2 SAMPLE (Opinion ~100 words):**\nI partly agree that electric cars are a solution to climate change. On one hand, they reduce CO₂ emissions in cities and help improve air quality. Furthermore, as more renewable energy is used, their overall environmental impact decreases. On the other hand, they are not a complete solution. The production of batteries requires rare materials that must be mined, which harms the environment. Also, charging infrastructure is still limited. In conclusion, electric cars are an important step, but they need to be combined with other measures to truly fight climate change.'
+            }
+          ]
+        }
+      },
+      {
+        id: 'en-3', prio: 'mid', name: 'Vocabulary & Grammar',
+        badge: '📚 Fundament',
+        desc: 'Present Perfect, Simple Past, passive voice. Wichtige Vokabeln für technische Texte.',
+        einfuehrung: [
+          { type: 'intro', text: 'Good grammar shows the examiner that you know English well. Focus on the tenses that appear most in technical texts.' },
+          { type: 'head', text: 'Simple Past vs. Present Perfect' },
+          { type: 'formula', cls: 'en', text: 'Simple Past: I worked yesterday. / In 2020, we built a new factory.\nPresent Perfect: I have worked here for 3 years. / We have already finished the project.' },
+          { type: 'head', text: 'Passive Voice (häufig in technischen Texten!)' },
+          { type: 'formula', cls: 'en', text: 'Active: The engineer checks the circuit.\nPassive: The circuit is checked (by the engineer).' },
+          { type: 'tip', text: '💡 Merke: In technical writing, passive is very common because the THING is more important than WHO does it.' },
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Complete with Simple Past or Present Perfect:\n1. We _______ (install) the new system last week.\n2. She _______ (never / see) an electric car before.\n3. The engineers _______ (finish) the report yesterday.',
+            solution: '1. We <strong>installed</strong> the new system last week. (Simple Past – "last week")<br>2. She <strong>has never seen</strong> an electric car before. (Present Perfect – life experience)<br>3. The engineers <strong>finished</strong> the report yesterday. (Simple Past – "yesterday")'
+          }
+        ],
+        probe: null
+      }
+    ]
+  },
+
+  ma: {
+    name: 'Mathematik', emoji: '📐', cls: 'ma',
+    date: '21. Mai 2025', dateISO: '2025-05-21',
+    aktuell: '4', ziel: '3',
+    goalText: 'Von 4 auf 3 — Algebra und Funktionen bringen die Punkte!',
+    topics: [
+      {
+        id: 'ma-1', prio: 'high', name: 'Lineare Gleichungssysteme (LGS)',
+        badge: '⭐ Sehr wichtig',
+        desc: 'Additionsverfahren sicher beherrschen — häufig in der Prüfung.',
+        einfuehrung: [
+          { type: 'intro', text: 'Ein LGS hat <strong>zwei Unbekannte</strong> (meist x und y) und <strong>zwei Gleichungen</strong>. Das Additionsverfahren ist die sicherste Methode.' },
+          { type: 'head', text: 'Additionsverfahren — Schritt für Schritt' },
+          { type: 'list', items: [
+            '<strong>Schritt 1:</strong> Gleichungen so umformen, dass eine Variable eliminiert wird (eine multiplizieren)',
+            '<strong>Schritt 2:</strong> Gleichungen addieren → eine Unbekannte fällt weg',
+            '<strong>Schritt 3:</strong> Ergebnis einsetzen und zweite Unbekannte berechnen',
+            '<strong>Schritt 4:</strong> Probe machen! (Einsetzen in BEIDE Gleichungen)'
+          ]},
+          { type: 'formula', cls: 'ma', text: 'Beispiel:\n2x + y = 7   (I)\n x − y = 2   (II)\n→ (I)+(II): 3x = 9 → x = 3\n→ in (II): 3 − y = 2 → y = 1\nLösung: x=3, y=1' },
+          { type: 'tip', text: '💡 Probe IMMER machen: 2(3)+1 = 7 ✓ und 3−1 = 2 ✓' },
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Löse das LGS mit dem Additionsverfahren:\n   3x + 2y = 12   (I)\n   x  − 2y = 4    (II)\n\nZeige alle Schritte und mache eine Probe!',
+            solution: '<strong>Schritt 1:</strong> Gleichungen addieren (y fällt weg)<br>(I)+(II): 3x + x + 2y − 2y = 12 + 4<br>4x = 16 → <strong>x = 4</strong><br><br><strong>Schritt 2:</strong> x in (II) einsetzen<br>4 − 2y = 4 → −2y = 0 → <strong>y = 0</strong><br><br><strong>Probe:</strong><br>(I): 3(4) + 2(0) = 12 ✓<br>(II): 4 − 2(0) = 4 ✓<br><br>Lösung: <strong>x = 4, y = 0</strong>'
+          },
+          {
+            nr: 2,
+            q: 'Ein Elektriker kauft 3 Schalter und 2 Steckdosen für 22€. Außerdem kauft er 1 Schalter und 4 Steckdosen für 26€.\n\nStelle zwei Gleichungen auf und löse sie mit dem Additionsverfahren. Wie viel kostet ein Schalter? Wie viel eine Steckdose?',
+            solution: '<strong>Variablen:</strong> x = Preis Schalter, y = Preis Steckdose<br><br><strong>Gleichungen:</strong><br>3x + 2y = 22   (I)<br>x  + 4y = 26   (II)<br><br><strong>Lösung:</strong><br>(I) × 2: 6x + 4y = 44<br>Minus (II): 5x = 18 → x = 3,60€<br><br>In (II): 3,60 + 4y = 26 → 4y = 22,40 → y = 5,60€<br><br><strong>Probe:</strong> 3(3,60)+2(5,60) = 10,80+11,20 = 22€ ✓<br><br>Ein Schalter kostet <strong>3,60€</strong>, eine Steckdose <strong>5,60€</strong>.'
+          }
+        ],
+        probe: null
+      },
+      {
+        id: 'ma-2', prio: 'high', name: 'Quadratische Funktionen & Parabeln',
+        badge: '⭐ pq-Formel!',
+        desc: 'Nullstellen mit pq-Formel berechnen, Scheitelpunktform, Schnittpunkte mit Geraden.',
+        einfuehrung: [
+          { type: 'intro', text: 'Parabeln sind quadratische Funktionen der Form <strong>f(x) = ax² + bx + c</strong>. Du musst die pq-Formel <em>auswendig</em> können!' },
+          { type: 'formula', cls: 'ma', text: 'Normalform:  x² + px + q = 0\npq-Formel:  x₁₂ = −p/2 ± √( (p/2)² − q )' },
+          { type: 'head', text: 'Scheitelpunktform' },
+          { type: 'formula', cls: 'ma', text: 'f(x) = a(x − d)² + e\nScheitel S(d | e)\nUmformen: Quadratische Ergänzung' },
+          { type: 'head', text: 'Schnittpunkt Gerade und Parabel' },
+          { type: 'formula', cls: 'ma', text: 'f(x) = g(x) setzen → Gleichung nach x lösen' },
+          { type: 'tip', text: '💡 Merke: Die Diskriminante D = (p/2)² − q: D > 0 → 2 Nullstellen, D = 0 → 1 Nullstelle, D < 0 → keine' },
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Berechne die Nullstellen mit der pq-Formel:\nf(x) = x² − 5x + 6\n\nHinweis: Forme zuerst auf Normalform um → x² + px + q = 0',
+            solution: 'x² − 5x + 6 = 0<br>p = −5, q = 6<br><br>x₁₂ = −(−5)/2 ± √( (−5/2)² − 6 )<br>x₁₂ = 2,5 ± √(6,25 − 6)<br>x₁₂ = 2,5 ± √0,25<br>x₁₂ = 2,5 ± 0,5<br><br><strong>x₁ = 3, x₂ = 2</strong>'
+          },
+          {
+            nr: 2,
+            q: 'Gegeben: f(x) = x² − 4 und g(x) = 2x − 1\n\nBerechne die Schnittpunkte von f und g.',
+            solution: '<strong>f(x) = g(x) setzen:</strong><br>x² − 4 = 2x − 1<br>x² − 2x − 3 = 0<br><br><strong>pq-Formel:</strong> p = −2, q = −3<br>x₁₂ = 1 ± √(1 + 3) = 1 ± 2<br>x₁ = 3, x₂ = −1<br><br><strong>y-Werte:</strong><br>g(3) = 2(3)−1 = 5 → S₁(3 | 5)<br>g(−1) = 2(−1)−1 = −3 → S₂(−1 | −3)'
+          }
+        ],
+        probe: {
+          title: 'Mathe Probeprüfung',
+          dauer: '90 Min',
+          punkte: 60,
+          aufgaben: [
+            {
+              text: '**Aufgabe 1 – LGS (20 Punkte)**\nLöse das folgende Gleichungssystem mit dem Additionsverfahren. Zeige alle Rechenschritte und mache eine Probe.\n\n  4x + 3y = 18   (I)\n  2x − 3y = 0    (II)\n\n**Aufgabe 2 – Parabel (20 Punkte)**\nGegeben: f(x) = x² − 6x + 8\na) Berechne die Nullstellen mit der pq-Formel.\nb) Bestimme den Scheitelpunkt durch quadratische Ergänzung.\nc) Zeichne eine Skizze der Parabel (ungefähr).\n\n**Aufgabe 3 – Schnittpunkt (20 Punkte)**\nGegeben: f(x) = x² − 2x und g(x) = x + 4\nBerechne die Schnittpunkte. Zeige alle Schritte.',
+              musterloesung: '**Aufgabe 1:**\n(I)+(II): 6x = 18 → x = 3\nIn (II): 6 − 3y = 0 → y = 2\nProbe: 4(3)+3(2)=18 ✓, 2(3)−3(2)=0 ✓\nLösung: x=3, y=2\n\n**Aufgabe 2:**\na) x²−6x+8=0, p=−6, q=8\nx₁₂ = 3 ± √(9−8) = 3±1 → x₁=4, x₂=2\n\nb) x²−6x+8 = (x−3)²−9+8 = (x−3)²−1\nScheitel S(3 | −1)\n\nc) Nach oben geöffnete Parabel, Scheitel bei (3,−1), schneidet x-Achse bei x=2 und x=4\n\n**Aufgabe 3:**\nx²−2x = x+4 → x²−3x−4=0\np=−3, q=−4: x₁₂ = 1,5 ± √(2,25+4) = 1,5 ± 2,5\nx₁=4, x₂=−1\ny: g(4)=8 → S₁(4|8); g(−1)=3 → S₂(−1|3)'
+            }
+          ]
+        }
+      },
+      {
+        id: 'ma-3', prio: 'mid', name: 'Prozent- und Zinsrechnung',
+        badge: '💰 Alltagsmathe',
+        desc: 'Prozentwert, Grundwert, Prozentsatz berechnen. Zinsformel anwenden.',
+        einfuehrung: [
+          { type: 'intro', text: 'Prozentrechnung ist praxisnah und kommt in fast jeder Prüfung vor. Die drei Grundformeln musst du auswendig kennen.' },
+          { type: 'formula', cls: 'ma', text: 'W = G × p/100    (Prozentwert)\nG = W × 100/p   (Grundwert)\np = W × 100/G   (Prozentsatz)\n\nZinsformel: Z = K × p × t / 100' },
+          { type: 'list', items: [
+            'W = Prozentwert (das gesuchte Stück)',
+            'G = Grundwert (das Ganze, 100%)',
+            'p = Prozentsatz (z.B. 20%)',
+            'Z = Zinsen, K = Kapital, t = Zeit in Jahren'
+          ]},
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Ein Laptop kostet 850€. Er wird um 15% reduziert.\na) Wie viel Euro beträgt der Rabatt?\nb) Was kostet der Laptop nach der Reduzierung?',
+            solution: 'a) W = 850 × 15/100 = <strong>127,50€</strong> Rabatt<br>b) 850 − 127,50 = <strong>722,50€</strong>'
+          },
+          {
+            nr: 2,
+            q: 'Lukas legt 2.000€ bei 3% Zinsen für 2 Jahre an.\nWie viel Zinsen bekommt er insgesamt?',
+            solution: 'Z = K × p × t / 100<br>Z = 2000 × 3 × 2 / 100<br>Z = <strong>120€</strong> Zinsen'
+          }
+        ],
+        probe: null
+      }
+    ]
+  },
+
+  el: {
+    name: 'Elektrotechnik', emoji: '⚡', cls: 'el',
+    date: '18. Mai 2025 (Theorie)', dateISO: '2025-05-18',
+    aktuell: '4,4', ziel: '4',
+    goalText: 'Von 4,4 auf 4 — Grundlagen + Schutzmaßnahmen sichern!',
+    topics: [
+      {
+        id: 'el-1', prio: 'high', name: 'Ohmsches Gesetz & Leistung',
+        badge: '⭐ Basiswissen',
+        desc: 'U = R × I und P = U × I sicher anwenden. Alle Umformungen beherrschen.',
+        einfuehrung: [
+          { type: 'intro', text: 'Das Ohmsche Gesetz ist <strong>die Grundformel der Elektrotechnik</strong>. Ohne diese Formel läuft nichts. Du musst sie in alle drei Richtungen umformen können.' },
+          { type: 'formula', cls: 'el', text: 'U = R × I     (Spannung in Volt)\nR = U / I     (Widerstand in Ohm)\nI = U / R     (Strom in Ampere)' },
+          { type: 'head', text: 'Leistungsformeln' },
+          { type: 'formula', cls: 'el', text: 'P = U × I         (Grundformel)\nP = U² / R         (wenn I unbekannt)\nP = I² × R         (wenn U unbekannt)\nEnergie: W = P × t  (Wattstunden / Joule)' },
+          { type: 'tip', text: '💡 Merkhilfe: Zeichne das URI-Dreieck! Oben U, links R, rechts I.' },
+          { type: 'head', text: 'Einheiten' },
+          { type: 'list', items: [
+            'Spannung U: Volt [V]',
+            'Strom I: Ampere [A]',
+            'Widerstand R: Ohm [Ω]',
+            'Leistung P: Watt [W]',
+            'Energie W: Wattstunde [Wh] oder Joule [J]'
+          ]},
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Ein Verbraucher ist an 230V angeschlossen und hat einen Widerstand von 46Ω.\n\na) Berechne den Strom I.\nb) Berechne die Leistung P.\nc) Wie viel Energie verbraucht das Gerät in 3 Stunden?',
+            solution: 'a) I = U / R = 230 / 46 = <strong>5 A</strong><br><br>b) P = U × I = 230 × 5 = <strong>1150 W = 1,15 kW</strong><br><br>c) W = P × t = 1150 × 3 = <strong>3450 Wh = 3,45 kWh</strong>'
+          },
+          {
+            nr: 2,
+            q: 'Ein Elektromotor hat eine Leistung von 2,2 kW und läuft mit 400V.\n\na) Berechne den Stromfluss I.\nb) Bei einem Wirkungsgrad von 85% – wie viel Watt werden als Wärme abgegeben?',
+            solution: 'a) I = P / U = 2200 / 400 = <strong>5,5 A</strong><br><br>b) Wärmeverlust = 2200 × 0,15 = <strong>330 W</strong>'
+          }
+        ],
+        probe: null
+      },
+      {
+        id: 'el-2', prio: 'high', name: 'Reihen- & Parallelschaltung',
+        badge: '⭐ Schaltungen',
+        desc: 'Gesamtwiderstand und Strom berechnen bei Reihen- und Parallelschaltung.',
+        einfuehrung: [
+          { type: 'intro', text: 'Du musst beide Schaltungsarten sicher unterscheiden und die Gesamtwiderstände berechnen können.' },
+          { type: 'head', text: 'Reihenschaltung' },
+          { type: 'formula', cls: 'el', text: 'R_ges = R₁ + R₂ + R₃\nI₁ = I₂ = I₃ = I_ges  (Strom gleich überall!)\nU_ges = U₁ + U₂ + U₃' },
+          { type: 'head', text: 'Parallelschaltung' },
+          { type: 'formula', cls: 'el', text: '1/R_ges = 1/R₁ + 1/R₂ + 1/R₃\nU₁ = U₂ = U₃ = U_ges  (Spannung gleich!)\nI_ges = I₁ + I₂ + I₃' },
+          { type: 'warn', text: '⚠️ Merke: Bei Reihenschaltung ist der Strom gleich, bei Parallelschaltung ist die Spannung gleich!' },
+          { type: 'tip', text: '💡 Für 2 Widerstände in Parallel: R_ges = (R₁ × R₂) / (R₁ + R₂)' },
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Reihenschaltung: R₁ = 20Ω, R₂ = 30Ω, U_ges = 100V\na) Berechne R_ges.\nb) Berechne I_ges.\nc) Berechne U₁ und U₂.',
+            solution: 'a) R_ges = 20 + 30 = <strong>50 Ω</strong><br><br>b) I_ges = U/R = 100/50 = <strong>2 A</strong><br><br>c) U₁ = R₁ × I = 20 × 2 = <strong>40 V</strong><br>U₂ = R₂ × I = 30 × 2 = <strong>60 V</strong><br>Probe: 40+60 = 100V ✓'
+          },
+          {
+            nr: 2,
+            q: 'Parallelschaltung: R₁ = 60Ω, R₂ = 40Ω, U = 120V\na) Berechne R_ges.\nb) Berechne I₁, I₂ und I_ges.',
+            solution: 'a) R_ges = (60×40)/(60+40) = 2400/100 = <strong>24 Ω</strong><br><br>b) I₁ = 120/60 = <strong>2 A</strong><br>I₂ = 120/40 = <strong>3 A</strong><br>I_ges = 2+3 = <strong>5 A</strong><br>Probe: R = U/I = 120/5 = 24Ω ✓'
+          }
+        ],
+        probe: null
+      },
+      {
+        id: 'el-3', prio: 'high', name: 'Die 5 Sicherheitsregeln',
+        badge: '⚠️ Auswendig!',
+        desc: 'Die 5 Sicherheitsregeln müssen auswendig gelernt werden — kommen immer dran!',
+        einfuehrung: [
+          { type: 'intro', text: 'Die <strong>5 Sicherheitsregeln</strong> nach DIN VDE 0105 sind die wichtigsten Regeln beim Arbeiten an elektrischen Anlagen. Diese müssen in der richtigen Reihenfolge auswendig sitzen!' },
+          { type: 'formula', cls: 'el', text: '1. FREISCHALTEN\n2. GEGEN WIEDEREINSCHALTEN SICHERN\n3. SPANNUNGSFREIHEIT FESTSTELLEN\n4. ERDEN UND KURZSCHLIESSEN\n5. BENACHBARTE UNTER SPANNUNG STEHENDE TEILE ABDECKEN' },
+          { type: 'tip', text: '💡 Merkhilfe: "Frei – Sichern – Stellen – Erden – Abdecken" → "Fürsten Stehen Edlen Ab"' },
+          { type: 'head', text: 'Was bedeuten die Regeln?' },
+          { type: 'list', items: [
+            '<strong>1. Freischalten:</strong> Alle Stromzufuhren ausschalten (Sicherungen raus)',
+            '<strong>2. Gegen Wiedereinschalten sichern:</strong> Sicherung sperren/Schloss anbringen, Warnschild',
+            '<strong>3. Spannungsfreiheit feststellen:</strong> Mit Spannungsprüfer prüfen, ob wirklich stromlos',
+            '<strong>4. Erden und kurzschließen:</strong> Restladungen ableiten (besonders bei Hochspannung)',
+            '<strong>5. Benachbarte Teile abdecken:</strong> Nahe unter Spannung stehende Teile isolieren/abdecken'
+          ]},
+          { type: 'warn', text: '⚠️ Die Reihenfolge ist verpflichtend! Schritt 3 darf niemals übersprungen werden!' },
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Nenne die 5 Sicherheitsregeln in der richtigen Reihenfolge aus dem Gedächtnis.',
+            solution: '1. Freischalten<br>2. Gegen Wiedereinschalten sichern<br>3. Spannungsfreiheit feststellen<br>4. Erden und Kurzschließen<br>5. Benachbarte, unter Spannung stehende Teile abdecken oder abschranken'
+          },
+          {
+            nr: 2,
+            q: 'Ein Elektriker will an einer Anlage arbeiten und sagt: "Ich habe Schritt 1 gemacht, jetzt mache ich Schritt 3." \n\nWas hat er vergessen? Warum ist das gefährlich?',
+            solution: 'Er hat <strong>Schritt 2 vergessen</strong> – Gegen Wiedereinschalten sichern.<br><br>Gefahr: Wenn eine andere Person die Sicherung wieder einschaltet, während der Elektriker an der Anlage arbeitet, besteht <strong>Lebensgefahr durch Stromschlag</strong>. Deshalb muss die Anlage gesperrt und mit einem Warnschild versehen werden.'
+          }
+        ],
+        probe: {
+          title: 'Elektrotechnik Theorie Probeprüfung',
+          dauer: '90 Min',
+          punkte: 60,
+          aufgaben: [
+            {
+              text: '**Aufgabe 1 – Ohmsches Gesetz & Leistung (20 Punkte)**\n\nEin elektrischer Heizkörper hat einen Widerstand von 57,5Ω und ist an 230V angeschlossen.\n\na) Berechne den fließenden Strom I.\nb) Berechne die elektrische Leistung P.\nc) Wie viel kostet der Betrieb für 8 Stunden bei 0,30€/kWh?\n\n**Aufgabe 2 – Schaltungen (20 Punkte)**\n\nDrei Widerstände sind in Parallelschaltung: R₁ = 120Ω, R₂ = 60Ω, R₃ = 40Ω, U = 240V\n\na) Berechne den Gesamtwiderstand R_ges.\nb) Berechne den Gesamtstrom I_ges.\nc) Berechne den Strom durch jeden einzelnen Widerstand.\n\n**Aufgabe 3 – Sicherheit (20 Punkte)**\n\na) Nenne die 5 Sicherheitsregeln in der richtigen Reihenfolge.\nb) Erkläre, was passiert, wenn Schritt 3 ausgelassen wird.\nc) Was bedeutet RCD (FI-Schalter) und bei welchem Auslösestrom löst er aus?',
+              musterloesung: '**Aufgabe 1:**\na) I = U/R = 230/57,5 = 4 A\nb) P = U×I = 230×4 = 920 W = 0,92 kW\nc) W = 0,92 × 8 = 7,36 kWh × 0,30 = 2,21€\n\n**Aufgabe 2:**\na) 1/R_ges = 1/120 + 1/60 + 1/40 = 1/120 + 2/120 + 3/120 = 6/120 → R_ges = 20Ω\nb) I_ges = U/R_ges = 240/20 = 12 A\nc) I₁=240/120=2A, I₂=240/60=4A, I₃=240/40=6A\nProbe: 2+4+6=12A ✓\n\n**Aufgabe 3:**\na) 1.Freischalten 2.Gegen Wiedereinschalten sichern 3.Spannungsfreiheit feststellen 4.Erden und kurzschließen 5.Benachbarte Teile abdecken\nb) Man nimmt an, dass keine Spannung anliegt, obwohl das nicht geprüft wurde → Lebensgefahr!\nc) RCD = Residual Current Device (Fehlerstromschutzschalter). Er erkennt Differenzströme zwischen Hin- und Rückleiter. Auslösestrom: ≤ 30mA für Personenschutz.'
+            }
+          ]
+        }
+      },
+      {
+        id: 'el-4', prio: 'mid', name: 'LOGO! Steuerung & Schaltungen',
+        badge: '🤖 SPS',
+        desc: 'UND/ODER-Glieder in LOGO!, Installationsschaltungen lesen.',
+        einfuehrung: [
+          { type: 'intro', text: 'LOGO! ist eine Kleinsteuerung (SPS) von Siemens. Du musst einfache Schaltlogiken verstehen und programmieren können.' },
+          { type: 'head', text: 'Grundglieder' },
+          { type: 'formula', cls: 'el', text: 'UND-Glied: Ausgang = 1, WENN Eingang1 = 1 UND Eingang2 = 1\nODER-Glied: Ausgang = 1, WENN Eingang1 = 1 ODER Eingang2 = 1\nNEGATION: Ausgang = 1, WENN Eingang = 0' },
+          { type: 'list', items: [
+            'Schaltuhren können Zeiten (Ein/Aus) steuern',
+            'Sensoren (z.B. Temperatursensoren) liefern Eingangs-Signale',
+            'LOGO! kann bis zu 8 Eingänge verarbeiten'
+          ]},
+        ],
+        exercises: [
+          {
+            nr: 1,
+            q: 'Erkläre den Unterschied zwischen einem UND-Glied und einem ODER-Glied in einfachen Worten. Nenne jeweils ein Praxisbeispiel aus der Elektrotechnik.',
+            solution: '<strong>UND-Glied:</strong> Der Ausgang ist nur aktiv, wenn ALLE Eingänge aktiv sind.<br>Praxis: Sicherheitsschaltung — Maschine läuft nur, wenn Tür zu UND Notaus nicht gedrückt.<br><br><strong>ODER-Glied:</strong> Der Ausgang ist aktiv, wenn MINDESTENS EIN Eingang aktiv ist.<br>Praxis: Treppenlichtschalter — Licht geht an, wenn Schalter oben ODER Schalter unten gedrückt wird.'
+          }
+        ],
+        probe: null
+      }
+    ]
+  }
+};
+
+// ===== STATE =====
+let currentSubject = null;
+let currentTopic = null;
+let navStack = ['home'];
+let probeActive = false;
+let timerInterval = null;
+let timerSeconds = 0;
+
+// ===== COUNTDOWN =====
+function calcDays(dateISO) {
+  const now = new Date();
+  const target = new Date(dateISO);
+  const diff = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+  return Math.max(0, diff);
+}
+
+function initCountdowns() {
+  Object.keys(SUBJECTS).forEach(key => {
+    const s = SUBJECTS[key];
+    const el = document.getElementById('days-' + key);
+    if (el) {
+      const d = calcDays(s.dateISO);
+      el.innerHTML = `${d}<span>Tage</span>`;
+      if (d <= 7) el.style.color = 'var(--accent-de)';
+      else if (d <= 14) el.style.color = 'var(--accent-el)';
+    }
+  });
+}
+
+// ===== NAVIGATION =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function updateTopbar() {
+  const backBtn = document.getElementById('backBtn');
+  const title = document.getElementById('topbarTitle');
+
+  if (navStack.length <= 1) {
+    backBtn.classList.remove('visible');
+    title.textContent = '📚 Abschlussprüfung 2025';
+  } else if (navStack.length === 2) {
+    backBtn.classList.add('visible');
+    const s = SUBJECTS[currentSubject];
+    title.textContent = s.emoji + ' ' + s.name;
+  } else {
+    backBtn.classList.add('visible');
+    title.textContent = currentTopic ? currentTopic.name : '';
+  }
+}
+
+function goBack() {
+  navStack.pop();
+  if (navStack.length === 1) {
+    showScreen('home');
+    currentSubject = null; currentTopic = null;
+  } else if (navStack.length === 2) {
+    showScreen('subject');
+    currentTopic = null;
+    renderSubject(currentSubject);
+  }
+  updateTopbar();
+}
+
+// ===== SUBJECT =====
+function openSubject(key) {
+  currentSubject = key;
+  navStack.push('subject');
+  renderSubject(key);
+  showScreen('subject');
+  updateTopbar();
+  window.scrollTo(0, 0);
+}
+
+function renderSubject(key) {
+  const s = SUBJECTS[key];
+  const header = document.getElementById('subject-header-content');
+  const list = document.getElementById('topics-list-content');
+
+  const goalColor = { de: 'var(--accent-de)', en: 'var(--accent-en)', ma: 'var(--accent-ma)', el: 'var(--accent-el)' }[key];
+
+  header.innerHTML = `
+    <div class="subject-header-top">
+      <div class="sh-icon">${s.emoji}</div>
+      <div class="sh-info">
+        <h2>${s.name}</h2>
+        <p>${s.date} · ${s.goalText}</p>
+      </div>
+    </div>
+    <span class="sh-goal-badge" style="color:${goalColor};border-color:${goalColor}30;background:${goalColor}12">
+      Aktuell: ${s.aktuell} → Ziel: Note ${s.ziel}
+    </span>
+  `;
+
+  list.innerHTML = s.topics.map(t => `
+    <div class="topic-block" onclick="openTopic('${t.id}')">
+      <div class="topic-header">
+        <div class="topic-prio prio-${t.prio}"></div>
+        <div class="topic-name">${t.name}</div>
+        <span class="topic-badge">${t.badge}</span>
+        <span class="topic-chevron">›</span>
+      </div>
+      <div class="topic-desc">${t.desc}</div>
+    </div>
+  `).join('');
+}
+
+// ===== TOPIC =====
+function openTopic(topicId) {
+  const s = SUBJECTS[currentSubject];
+  const topic = s.topics.find(t => t.id === topicId);
+  currentTopic = topic;
+  navStack.push('topic');
+  renderTopic(topic, s.cls);
+  showScreen('topic');
+  updateTopbar();
+  window.scrollTo(0, 0);
+}
+
+function renderTopic(topic, cls) {
+  const header = document.getElementById('topic-detail-header');
+  header.innerHTML = `
+    <div class="tdh-label">${SUBJECTS[currentSubject].name}</div>
+    <div class="tdh-title">${topic.name}</div>
+  `;
+
+  const tabs = document.getElementById('topic-tabs');
+  const content = document.getElementById('topic-tab-content');
+
+  const hasprobe = topic.probe !== null;
+  tabs.innerHTML = `
+    <button class="tab-btn active" onclick="switchTab('einfuehrung', this)">📖 Einführung</button>
+    <button class="tab-btn" onclick="switchTab('uebungen', this)">✏️ Übungsaufgaben</button>
+    ${hasprobe ? `<button class="tab-btn" onclick="switchTab('probe', this)">🎯 Probeprüfung</button>` : ''}
+  `;
+
+  content.innerHTML = `
+    <div class="tab-content active" id="tab-einfuehrung">${renderEinfuehrung(topic, cls)}</div>
+    <div class="tab-content" id="tab-uebungen">${renderUebungen(topic, cls)}</div>
+    ${hasprobe ? `<div class="tab-content" id="tab-probe">${renderProbe(topic, cls)}</div>` : ''}
+  `;
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+}
+
+function renderEinfuehrung(topic, cls) {
+  return topic.einfuehrung.map(block => {
+    if (block.type === 'intro') return `<div class="content-section"><p>${block.text}</p></div>`;
+    if (block.type === 'head') return `<div class="section-divider">${block.text}</div>`;
+    if (block.type === 'formula') return `<div class="formula-box ${cls}">${block.text.replace(/\n/g, '<br>')}</div>`;
+    if (block.type === 'tip') return `<div class="tip-box">${block.text}</div>`;
+    if (block.type === 'warn') return `<div class="warn-box">${block.text}</div>`;
+    if (block.type === 'list') return `<div class="content-section"><ul>${block.items.map(i => `<li>${i}</li>`).join('')}</ul></div>`;
+    return '';
+  }).join('');
+}
+
+function renderUebungen(topic, cls) {
+  return topic.exercises.map((ex, idx) => `
+    <div class="exercise-card">
+      <div class="exercise-number">Aufgabe ${ex.nr}</div>
+      <div class="exercise-question">${ex.q.replace(/\n/g, '<br>')}</div>
+      <textarea class="answer-area" placeholder="Schreibe deine Antwort hier..." id="ans-${topic.id}-${idx}"></textarea>
+      <div class="answer-actions">
+        <button class="btn btn-primary btn-small" onclick="toggleSolution('sol-${topic.id}-${idx}')">Musterlösung anzeigen</button>
+        <button class="btn btn-secondary btn-small" onclick="document.getElementById('ans-${topic.id}-${idx}').value=''">Löschen</button>
+      </div>
+      <div class="solution-box" id="sol-${topic.id}-${idx}">
+        <div class="solution-label">✓ Musterlösung</div>
+        <div class="solution-text">${ex.solution}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleSolution(id) {
+  const box = document.getElementById(id);
+  box.classList.toggle('show');
+  const btn = box.previousElementSibling.querySelector('.btn-primary');
+  if (box.classList.contains('show')) {
+    btn.textContent = 'Musterlösung ausblenden';
+  } else {
+    btn.textContent = 'Musterlösung anzeigen';
+  }
+}
+
+function renderProbe(topic, cls) {
+  if (!topic.probe) return '';
+  const p = topic.probe;
+  return `
+    <div class="probe-intro">
+      <h3>🎯 ${p.title}</h3>
+      <p>Diese Probeprüfung simuliert die echte Prüfungssituation. Bearbeite alle Aufgaben eigenständig — erst danach die Musterlösung aufdecken!</p>
+      <div class="probe-meta">
+        <div class="probe-meta-item"><strong>${p.dauer}</strong>Zeit</div>
+        <div class="probe-meta-item"><strong>${p.punkte}</strong>Punkte</div>
+        <div class="probe-meta-item"><strong>${Math.round(p.punkte * 0.5)}</strong>zum Bestehen</div>
+      </div>
+      <div class="timer-display" id="probe-timer">00:00</div>
+      <div class="answer-actions" style="justify-content:center">
+        <button class="btn btn-primary" onclick="startTimer()">⏱ Timer starten</button>
+        <button class="btn btn-secondary" onclick="stopTimer()">Stop</button>
+      </div>
+    </div>
+    ${p.aufgaben.map((a, i) => `
+      <div class="exercise-card">
+        <div class="exercise-number">Prüfungsaufgabe ${i + 1}</div>
+        <div class="exercise-question">${a.text.replace(/\n/g, '<br>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>
+        <textarea class="answer-area" placeholder="Deine Lösung..." style="min-height:150px" id="probe-ans-${i}"></textarea>
+        <div class="answer-actions">
+          <button class="btn btn-primary btn-small" onclick="toggleSolution('probe-sol-${i}')">Musterlösung anzeigen</button>
+        </div>
+        <div class="solution-box" id="probe-sol-${i}">
+          <div class="solution-label">✓ Musterlösung</div>
+          <div class="solution-text">${a.musterloesung.replace(/\n/g, '<br>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function startTimer() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerSeconds = 0;
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    const m = Math.floor(timerSeconds / 60).toString().padStart(2,'0');
+    const s = (timerSeconds % 60).toString().padStart(2,'0');
+    const el = document.getElementById('probe-timer');
+    if (el) el.textContent = m + ':' + s;
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+// ===== INIT =====
+initCountdowns();
+</script>
+</body>
+</html>
